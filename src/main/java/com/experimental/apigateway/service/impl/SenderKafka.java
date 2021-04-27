@@ -16,32 +16,33 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 @Slf4j
 public class SenderKafka implements Sender {
 
-    private Gson gson;
+    private final Gson gson;
 
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
     public boolean send(MsgDto msgDto) {
-
-        log.info("Send msg to Service-a " + msgDto.toString());
-        return kafkaTemplate.send("sevice-a", gson.toJson(msgDto)).isDone();
+        msgDto.setMsgBetweenServices(msgDto.getMsgBetweenServices() + " --> api-gateway here");
+        log.info("Send msg to Service-a " + msgDto);
+        sendMessage(gson.toJson(msgDto));
+        return true;
     }
 
-    public void sendMessage(String message) {
+    private void sendMessage(String message) {
 
         ListenableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send("sevice-a", message);
+                kafkaTemplate.send("a-service", message);
 
         future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
 
             @Override
             public void onSuccess(SendResult<String, String> result) {
-                System.out.println("Sent message=[" + message +
+                log.info("Sent message=[" + message +
                         "] with offset=[" + result.getRecordMetadata().offset() + "]");
             }
             @Override
             public void onFailure(Throwable ex) {
-                System.out.println("Unable to send message=["
+                log.error("Unable to send message=["
                         + message + "] due to : " + ex.getMessage());
             }
         });

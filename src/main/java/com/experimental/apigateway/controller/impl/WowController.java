@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "/app/v1/message")
+@RequestMapping(path = "/api/v1/message")
 @RequiredArgsConstructor
 @Slf4j
 public class WowController implements IWowController {
@@ -23,11 +24,14 @@ public class WowController implements IWowController {
 
     @Override
     public List<MsgDto> getMsg() {
+        log.info("get all msg");
         return storageService.getAllMsg();
     }
 
     @Override
     public boolean createMsg(MsgDto msgDto) {
+        log.info("create msg");
+        msgDto.setActivityId(UUID.randomUUID());
         return sender.send(msgDto);
     }
 }
